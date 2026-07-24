@@ -1,13 +1,58 @@
-export async function GET(){
+import {teamAlias} from "@/lib/teamAlias";
+
+
+export async function GET(request){
+
+
+const {searchParams}=new URL(request.url);
+
+
+let keyword=
+searchParams.get("q");
+
+
+if(!keyword){
 
 return Response.json({
-status:"Auto data refresh ready",
-tasks:[
-"update fixtures",
-"update standings",
-"update team data",
-"update injuries"
-]
-})
+error:"请输入球队"
+});
+
+}
+
+
+
+keyword=
+teamAlias[keyword] || keyword;
+
+
+
+const res =
+await fetch(
+
+`https://v3.football.api-sports.io/teams?search=${encodeURIComponent(keyword)}`,
+
+{
+
+headers:{
+
+"x-apisports-key":
+process.env.FOOTBALL_API_KEY
+
+}
+
+}
+
+);
+
+
+
+const data=
+await res.json();
+
+
+
+return Response.json(data);
+
+
 
 }
