@@ -1,46 +1,44 @@
-export async function translateTeamName(name){
+export async function translateTeamName(name) {
+
+    try {
+
+        const response = await fetch(
+            "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json",
+
+                    "Authorization":
+                    `Bearer ${process.env.OPENAI_API_KEY}`
+                },
 
 
-const res =
-await fetch(
-"https://open.bigmodel.cn/api/paas/v4/chat/completions",
-{
+                body: JSON.stringify({
 
-method:"POST",
+                    model: "glm-4-flash",
 
-headers:{
+                    messages: [
+                        {
+                            role: "user",
 
-"Content-Type":"application/json",
-
-"Authorization":
-`Bearer ${process.env.OPENAI_API_KEY}`
-
-},
-
-
-body:JSON.stringify({
-
-model:"glm-4-flash",
-
-
-messages:[
-
-{
-
-role:"user",
-
-content:
+                            content:
 `
-你是足球球队名称转换器。
+你是足球数据库搜索助手。
 
-把下面中文球队转换成可能的英文官方名称。
+把用户输入的球队中文名转换成可能的英文官方球队名称。
 
-只返回JSON数组，不要解释。
+只返回JSON数组。
 
-例：
+不要解释。
+
+例如:
+
+输入:
 全北现代
 
-返回：
+输出:
 [
 "Jeonbuk Motors",
 "Jeonbuk Hyundai Motors",
@@ -48,30 +46,75 @@ content:
 ]
 
 
-球队：
-${name}
+输入:
+皇马
 
-`
-
-}
-
+输出:
+[
+"Real Madrid"
 ]
 
 
-})
+现在转换:
 
-});
+${name}
+
+`
+                        }
+                    ]
+
+                })
+
+            }
+        );
 
 
-const data =
-await res.json();
+        const data = await response.json();
+
+
+        if(
+            !data.choices ||
+            !data.choices[0]
+        ){
+
+            return [];
+
+        }
 
 
 
-return JSON.parse(
-data.choices[0].message.content
-);
+        let text =
+        data.choices[0]
+        .message
+        .content
+        .trim();
 
 
+
+        // 防止AI带markdown
+
+        text =
+        text
+        .replace(/```json/g,"")
+        .replace(/```/g,"")
+        .trim();
+
+
+
+        return JSON.parse(text);
+
+
+
+    } catch(error){
+
+        console.log(
+            "AI translate error:",
+            error
+        );
+
+
+        return [];
+
+    }
 
 }
