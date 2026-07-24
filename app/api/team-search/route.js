@@ -1,148 +1,67 @@
-import {NextResponse} from "next/server";
-
-import {
-translateTeamName
-}
-from "./teamAlias";
-
-const API_URL =
-"https://v3.football.api-sports.io";
+import { translateTeamName } from "./teamAlias";
 
 
-
-async function searchTeam(name){
-
-
-const res =
-await fetch(
-
-`${API_URL}/teams?search=${encodeURIComponent(name)}`,
-
-{
-
-headers:{
-
-"x-apisports-key":
-process.env.FOOTBALL_API_KEY
-
-},
-
-cache:"no-store"
-
-}
-
-);
+export async function GET(request){
 
 
-const data =
-await res.json();
+const {searchParams}=new URL(request.url);
 
 
-return data.response || [];
-
-}
-
-
-
-
-
-export async function GET(req){
-
-
-try{
-
-
-const {searchParams}=new URL(req.url);
-
-
-const q =
+const keyword =
 searchParams.get("q");
 
 
+if(!keyword){
 
-if(!q){
-
-return NextResponse.json({
-
+return Response.json({
 error:"请输入球队"
-
 });
 
 }
-
-
 
 
 // 第一次直接搜索
-
-let result =
-await searchTeam(q);
-
+let teams =
+await searchFootballAPI(keyword);
 
 
-
-// 没找到
-
-// AI识别
-
-if(result.length===0){
+// 没找到，调用AI
+if(teams.length===0){
 
 
-const aiName =
-await translateTeamName(q);
+const names =
+await translateTeamName(keyword);
 
 
 
-result =
-await searchTeam(aiName);
+for(const name of names){
+
+
+teams =
+await searchFootballAPI(name);
+
+
+if(teams.length>0){
+break;
+}
+
+
+}
 
 
 }
 
 
 
-return NextResponse.json({
+return Response.json({
 
+keyword,
 
-keyword:q,
+count:teams.length,
 
-
-count:
-result.length,
-
-
-teams:
-
-result.map(item=>({
-
-id:item.team.id,
-
-name:item.team.name,
-
-country:item.team.country,
-
-logo:item.team.logo,
-
-venue:item.venue
-
-}))
-
+teams
 
 });
-
-
-
-}catch(e){
-
-
-return NextResponse.json({
-
-error:e.message
-
-});
-
-
-}
 
 
 }
