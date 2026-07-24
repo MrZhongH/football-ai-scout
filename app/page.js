@@ -5,74 +5,74 @@ import { useState } from "react";
 
 export default function Home(){
 
-const [keyword,setKeyword]=useState("");
 
-const [teams,setTeams]=useState([]);
+const [keyword,setKeyword] = useState("");
 
-const [loading,setLoading]=useState(false);
+const [teams,setTeams] = useState([]);
 
-const [error,setError]=useState("");
+const [loading,setLoading] = useState(false);
 
 
 
 async function searchTeam(){
 
+
 if(!keyword.trim()){
-    setError("请输入球队名称");
-    return;
+
+alert("请输入球队英文名称");
+
+return;
+
 }
 
-
-setLoading(true);
-setError("");
-setTeams([]);
 
 
 try{
 
 
-const res = await fetch(
-    `/api/team-search?q=${encodeURIComponent(keyword)}`
+setLoading(true);
+
+
+
+const response = await fetch(
+
+`/api/team-search?q=${encodeURIComponent(keyword)}`
+
 );
 
 
-const data = await res.json();
+
+const data = await response.json();
 
 
 
-if(data.error){
-
-    setError(data.error);
-
-}
-else{
-
-    setTeams(
-        data.response || []
-    );
-
-}
+console.log("SEARCH RESULT:",data);
 
 
 
-}catch(e){
+setTeams(data.teams || []);
 
-console.log(e);
-
-setError(
-"搜索失败，请稍后再试"
-);
 
 
 }
 
+catch(error){
 
+console.log(error);
+
+alert("搜索失败");
+
+}
+
+
+finally{
 
 setLoading(false);
 
-
 }
 
+
+}
 
 
 
@@ -82,49 +82,69 @@ return (
 <main
 style={{
 padding:"40px",
-fontFamily:"Arial"
+fontFamily:"Arial, sans-serif"
 }}
 >
 
 
 <h1>
+
 ⚽ 欢迎来到可乐的足球分析
+
 </h1>
 
 
+
 <h2>
-Football AI Scout V15.4
+
+Football AI Scout V15.6
+
 </h2>
+
 
 
 <hr/>
 
 
 <h2>
+
 🌍 全球球队搜索引擎
+
 </h2>
 
 
 
-<div>
+<div
+style={{
+display:"flex",
+gap:"10px"
+}}
+>
 
 
 <input
 
 value={keyword}
 
-placeholder="输入球队，例如 皇马 / Real Madrid / 曼城"
-
 onChange={
-e=>setKeyword(e.target.value)
+(e)=>setKeyword(e.target.value)
 }
+
+
+placeholder="请输入英文球队名，例如 Real Madrid"
 
 
 style={{
 
-width:"70%",
+flex:1,
+
 padding:"15px",
-fontSize:"18px"
+
+fontSize:"18px",
+
+border:"1px solid #ccc",
+
+borderRadius:"8px"
 
 }}
 
@@ -140,91 +160,110 @@ onClick={searchTeam}
 style={{
 
 padding:"15px 30px",
-marginLeft:"10px",
+
 fontSize:"18px",
-cursor:"pointer"
+
+cursor:"pointer",
+
+borderRadius:"8px"
 
 }}
 
 >
 
-搜索
+
+{
+
+loading
+
+?
+
+"搜索中..."
+
+:
+
+"搜索"
+
+}
+
 
 </button>
+
 
 
 </div>
 
 
 
-{
-loading &&
-
-<p>
-正在搜索球队...
-</p>
-
-}
 
 
-
-{
-error &&
-
-<p
+<hr
 style={{
-color:"red"
+marginTop:"30px"
 }}
->
+/>
 
-{error}
-
-</p>
-
-}
-
-
-
-
-{
-
-teams.length>0 &&
-
-<div>
 
 
 <h2>
-搜索结果
+
+📊 搜索结果
+
 </h2>
 
 
 
 {
 
-teams.map(
-(item,index)=>{
+teams.length===0 &&
+
+<p>
+
+请输入英文球队名称进行搜索
+
+</p>
+
+}
 
 
-const team=item.team;
 
 
-return (
+{
+
+teams.map((team)=>(
+
 
 <div
 
-key={index}
+key={team.id}
 
 style={{
 
 border:"1px solid #ddd",
-borderRadius:"10px",
+
 padding:"20px",
-marginTop:"20px"
+
+marginTop:"15px",
+
+borderRadius:"10px"
 
 }}
 
 >
 
+
+<div
+style={{
+display:"flex",
+alignItems:"center",
+gap:"20px"
+}}
+>
+
+
+{
+
+team.logo &&
 
 <img
 
@@ -232,125 +271,133 @@ src={team.logo}
 
 width="80"
 
+height="80"
+
 />
+
+}
+
+
+
+<div>
 
 
 <h2>
+
 {team.name}
+
 </h2>
 
 
+
 <p>
-国家：
+
 {team.country}
+
 </p>
 
 
-<p>
-球队ID：
-{team.id}
-</p>
+
+</div>
+
+
+
+</div>
+
 
 
 
 <button
 
-style={{
-
-padding:"10px 20px"
-
-}}
-
 onClick={()=>{
 
 window.location.href =
-`/team/${team.id}`
+`/team/${team.id}`;
+
+}}
+
+
+style={{
+
+marginTop:"15px",
+
+padding:"10px 20px",
+
+cursor:"pointer"
 
 }}
 
 >
 
-查看球队分析
+
+进入球队分析
+
 
 </button>
 
 
-</div>
-
-
-)
-
-
-}
-
-)
-
-
-}
-
-
 
 </div>
 
 
+
+))
+
+
 }
 
 
 
 
 
-<hr/>
+<hr
+
+style={{
+
+marginTop:"50px"
+
+}}
+
+/>
+
+
 
 
 <h2>
+
 📊 数据模块
+
 </h2>
+
 
 
 <ul>
 
-<li>
-球队基本信息
-</li>
+<li>球队基本信息</li>
 
-<li>
-球队 Logo
-</li>
+<li>球队 Logo</li>
 
-<li>
-积分排名
-</li>
+<li>积分排名</li>
 
-<li>
-比赛赛程
-</li>
+<li>比赛赛程</li>
 
-<li>
-近期比赛
-</li>
+<li>近期比赛</li>
 
-<li>
-历史交锋
-</li>
+<li>历史交锋</li>
 
-<li>
-伤停信息
-</li>
+<li>伤停信息</li>
 
-<li>
-球员阵容
-</li>
+<li>球员阵容</li>
 
+<li>AI比赛预测</li>
 
 </ul>
 
 
 
-
 </main>
 
-
-)
+);
 
 
 }
