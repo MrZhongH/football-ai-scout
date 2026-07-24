@@ -3,25 +3,31 @@
 export default function Home(){
 
 return (
-<html>
-<body>
+
+<div>
 
 <h1>
-TEST
+Football AI Scout V15.4 TEST
 </h1>
 
+
 <button
+
 onClick={()=>{
-console.log("clicked")
-alert("clicked")
+
+alert("React OK")
+
 }}
+
 >
-CLICK ME
+
+CLICK
+
 </button>
 
 
-</body>
-</html>
+</div>
+
 )
 
 }
