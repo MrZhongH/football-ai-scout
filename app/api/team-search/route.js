@@ -1,4 +1,4 @@
-import { teamAlias } from "@/lib/teamAlias";
+import { teamAlias } from "./teamAlias";
 
 
 export async function GET(request){
