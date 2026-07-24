@@ -263,9 +263,8 @@ padding:"10px 20px"
 
 onClick={()=>{
 
-alert(
-`进入 ${team.name} 分析页`
-)
+window.location.href =
+`/team/${team.id}`
 
 }}
 
