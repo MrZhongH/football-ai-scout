@@ -1,168 +1,305 @@
 "use client";
 
-import { useState } from "react";
-
-export default function Home() {
-
-  const games = [
-    ["曼城 vs 阿森纳", "英超", "★★★★★"],
-    ["皇马 vs 巴萨", "西甲", "★★★★☆"],
-    ["拜仁 vs 多特", "德甲", "★★★★"]
-  ];
-
-  const [keyword, setKeyword] = useState("");
-  const [team, setTeam] = useState(null);
-  const [loading, setLoading] = useState(false);
+import { useEffect, useState } from "react";
 
 
-  async function searchTeam(){
-
-    if(!keyword) return;
-
-    setLoading(true);
-
-    try{
-
-      const res = await fetch(
-        `/api/football?q=${encodeURIComponent(keyword)}`
-      );
-
-      const data = await res.json();
+export default function Home(){
 
 
-      if(data.response && data.response.length > 0){
+const [keyword,setKeyword]=useState("");
 
-        setTeam(data.response[0]);
+const [team,setTeam]=useState(null);
 
-      }else{
+const [fixtures,setFixtures]=useState([]);
 
-        setTeam(null);
-
-      }
-
-
-    }catch(error){
-
-      console.log(error);
-      setTeam(null);
-
-    }
-
-
-    setLoading(false);
-
-  }
+const [loading,setLoading]=useState(false);
 
 
 
-  return (
+
+/**
+ * 加载今日比赛
+ */
+async function loadFixtures(){
+
+try{
+
+const res =
+await fetch("/api/fixtures");
+
+
+const data =
+await res.json();
+
+
+if(data.response){
+
+setFixtures(
+data.response.slice(0,5)
+);
+
+}
+
+
+}catch(error){
+
+console.log(error);
+
+}
+
+}
+
+
+
+useEffect(()=>{
+
+loadFixtures();
+
+},[]);
+
+
+
+
+/**
+ * 全球球队搜索
+ */
+async function searchTeam(){
+
+
+if(!keyword){
+
+return;
+
+}
+
+
+setLoading(true);
+
+
+try{
+
+
+const res =
+await fetch(
+`/api/team-search?q=${encodeURIComponent(keyword)}`
+);
+
+
+const data =
+await res.json();
+
+
+
+if(
+data.response &&
+data.response.length>0
+){
+
+setTeam(
+data.response[0]
+);
+
+
+}else{
+
+
+setTeam(null);
+
+
+}
+
+
+}catch(error){
+
+
+console.log(error);
+
+setTeam(null);
+
+
+}
+
+
+
+setLoading(false);
+
+
+}
+
+
+
+
+
+
+return (
 
 <main
+
 style={{
-padding:"40px",
+
+padding:40,
+
 fontFamily:"Arial",
+
 background:"#f7f9fc",
+
 minHeight:"100vh"
+
 }}
+
 >
 
 
+
 <h1>
+
 ⚽ 欢迎来到可乐的足球分析
+
 </h1>
 
 
 <p>
-Football AI Scout V15.1
+
+Football AI Scout V15.2.1
+
 </p>
 
 
 
+
 <h2>
-🔥 今日重点比赛
+
+🔥 今日真实比赛
+
 </h2>
 
 
 
 {
-games.map((g,i)=>(
+
+fixtures.map((f,i)=>(
+
 
 <div
+
 key={i}
+
 style={{
+
 background:"#fff",
-padding:"20px",
+
+padding:20,
+
 margin:"15px 0",
-borderRadius:"15px",
+
+borderRadius:15,
+
 boxShadow:"0 3px 10px #ddd"
+
 }}
+
 >
 
+
 <h3>
-{g[0]}
+
+{f.teams.home.name}
+
+ VS
+
+{f.teams.away.name}
+
 </h3>
 
-<p>
-联赛：{g[1]}
-</p>
 
 <p>
-关注指数：{g[2]}
+
+🏆 {f.league.name}
+
 </p>
 
 
-<button>
-查看比赛数据
-</button>
+<p>
+
+🕒
+
+{
+
+new Date(
+f.fixture.date
+).toLocaleString()
+
+}
+
+</p>
 
 
 </div>
 
+
 ))
+
 }
 
 
 
-<hr/>
 
 
 <h2>
-🌍 全球足球搜索
+
+🌍 全球球队搜索
+
 </h2>
 
-
-<div
-style={{
-display:"flex",
-gap:"10px"
-}}
->
 
 
 <input
 
+
 value={keyword}
 
-onChange={(e)=>setKeyword(e.target.value)}
 
-placeholder="输入球队，例如 Real Madrid"
+onChange={
+
+(e)=>
+
+setKeyword(e.target.value)
+
+}
+
+
+placeholder="输入球队，例如 皇马 / 曼城 / Real Madrid"
+
 
 style={{
-padding:"12px",
+
+padding:12,
+
 width:"70%",
-fontSize:"16px"
+
+fontSize:16
+
 }}
+
 
 />
 
 
+
 <button
+
 
 onClick={searchTeam}
 
+
 style={{
-padding:"12px 25px",
+
+padding:12,
+
+marginLeft:10,
+
 cursor:"pointer"
+
 }}
 
 >
@@ -172,15 +309,18 @@ cursor:"pointer"
 </button>
 
 
-</div>
+
 
 
 
 {
+
 loading &&
 
 <p>
-正在查询真实数据...
+
+正在查询全球球队数据...
+
 </p>
 
 }
@@ -188,21 +328,32 @@ loading &&
 
 
 
+
+
 {
+
 team &&
 
 
 <div
 
+
 style={{
-marginTop:"30px",
+
+marginTop:30,
+
 background:"#fff",
-padding:"25px",
-borderRadius:"20px",
+
+padding:30,
+
+borderRadius:20,
+
 boxShadow:"0 3px 15px #ddd"
+
 }}
 
 >
+
 
 
 <img
@@ -211,7 +362,10 @@ src={team.team.logo}
 
 width="100"
 
+alt="logo"
+
 />
+
 
 
 <h2>
@@ -221,45 +375,66 @@ width="100"
 </h2>
 
 
+
 <p>
+
 🌍 国家：
+
 {team.team.country}
+
 </p>
+
 
 
 <p>
+
 📅 成立年份：
-{team.team.founded}
+
+{team.team.founded || "暂无"}
+
 </p>
+
+
 
 
 
 <h3>
-🏟 球场信息
+
+🏟 主场信息
+
 </h3>
 
 
+
 <p>
-{team.venue?.name}
+
+球场：
+
+{team.venue?.name || "暂无"}
+
 </p>
 
 
-<p>
-地址：
-{team.venue?.address}
-</p>
-
 
 <p>
+
 城市：
-{team.venue?.city}
+
+{team.venue?.city || "暂无"}
+
 </p>
+
 
 
 <p>
+
 容量：
-{team.venue?.capacity}
+
+{team.venue?.capacity || "暂无"}
+
 </p>
+
+
 
 
 </div>
@@ -270,9 +445,14 @@ width="100"
 
 
 
+
+
 <h2>
+
 📊 数据模块
+
 </h2>
+
 
 
 <ul>
@@ -301,12 +481,15 @@ width="100"
 球队阵容
 </li>
 
-
 </ul>
+
 
 
 
 </main>
 
-  );
+
+);
+
+
 }
