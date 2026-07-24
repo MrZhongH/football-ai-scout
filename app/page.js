@@ -1,52 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import {useState} from "react";
 
 
-export default function Home() {
+export default function Home(){
 
 
-const [keyword,setKeyword] = useState("");
+const [keyword,setKeyword]=useState("");
 
-const [loading,setLoading] = useState(false);
+const [result,setResult]=useState(null);
 
-const [data,setData] = useState(null);
 
 
 async function searchTeam(){
 
 
-if(!keyword){
-alert("请输入球队名称");
-return;
-}
+console.log("search:",keyword);
 
-
-setLoading(true);
-
-
-try{
 
 
 const res = await fetch(
-`/api/team-search?q=${encodeURIComponent(keyword)}`
+"/api/team-search?q="+keyword
 );
 
 
-const json = await res.json();
+const data = await res.json();
 
 
-setData(json);
+console.log(data);
 
 
-}catch(error){
-
-console.log(error);
-
-}
-
-
-setLoading(false);
+setResult(data);
 
 
 }
@@ -57,10 +41,7 @@ return (
 
 <main
 style={{
-padding:40,
-fontFamily:"Arial",
-background:"#ffffff",
-minHeight:"100vh"
+padding:40
 }}
 >
 
@@ -71,12 +52,8 @@ minHeight:"100vh"
 
 
 <h2>
-Football AI Scout V15.3.1
+Football AI Scout V15.4
 </h2>
-
-
-
-<hr/>
 
 
 
@@ -86,39 +63,19 @@ Football AI Scout V15.3.1
 
 
 
-<div>
-
-
 <input
 
 value={keyword}
 
 onChange={
-(e)=>setKeyword(e.target.value)
+e=>setKeyword(e.target.value)
 }
 
-onKeyDown={
-(e)=>{
-if(e.key==="Enter"){
-searchTeam();
-}
-}
-}
-
-placeholder="输入球队，例如 皇马 / 曼城 / 拜仁 / Real Madrid"
+placeholder="输入皇马/曼城/拜仁"
 
 style={{
-
 padding:15,
-
-width:"70%",
-
-fontSize:16,
-
-borderRadius:8,
-
-border:"1px solid #ccc"
-
+width:"70%"
 }}
 
 />
@@ -130,109 +87,32 @@ border:"1px solid #ccc"
 onClick={searchTeam}
 
 style={{
-
-padding:"15px 25px",
-
-marginLeft:10,
-
-borderRadius:8,
-
-cursor:"pointer"
-
+padding:15,
+marginLeft:10
 }}
 
 >
-
-{
-loading?
-"搜索中..."
-:
-"搜索"
-}
-
+搜索
 </button>
 
 
-</div>
-
-
-
-
 
 {
-data &&
 
-<div
+result &&
 
-style={{
-
-marginTop:30,
-
-background:"#f5f7fb",
-
-padding:25,
-
-borderRadius:15
-
-}}
-
->
-
+<div>
 
 <h2>
-🔎 搜索结果
+结果:
 </h2>
 
 
-
-{
-data.error ?
-
-<p>
-{data.error}
-</p>
-
-
-:
-
-<>
-
-
-<h3>
-球队：
-{
-data.team || keyword
-}
-</h3>
-
-
-
-<p>
-状态：
-✅ API连接成功
-</p>
-
-
-
-<pre
-
-style={{
-
-background:"#fff",
-
-padding:20,
-
-borderRadius:10,
-
-overflow:"auto"
-
-}}
-
->
+<pre>
 
 {
 JSON.stringify(
-data,
+result,
 null,
 2
 )
@@ -241,81 +121,16 @@ null,
 </pre>
 
 
-</>
-
-
-}
-
-
-
 </div>
 
 
 }
 
 
-
-
-
-<hr/>
-
-
-
-<h2>
-📊 数据模块
-</h2>
-
-
-<ul>
-
-<li>
-球队基本信息
-</li>
-
-
-<li>
-球队 Logo
-</li>
-
-
-<li>
-积分排名
-</li>
-
-
-<li>
-比赛赛程
-</li>
-
-
-<li>
-近期比赛
-</li>
-
-
-<li>
-历史交锋
-</li>
-
-
-<li>
-伤停信息
-</li>
-
-
-<li>
-球员阵容
-</li>
-
-
-</ul>
-
-
-
 </main>
 
 
-);
+)
 
 
 }
