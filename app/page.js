@@ -50,7 +50,9 @@ console.log("SEARCH RESULT:",data);
 
 
 
-setTeams(data.teams || []);
+setTeams(
+  data.response?.map(item => item.team) || []
+);
 
 
 
