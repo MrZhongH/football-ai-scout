@@ -14,9 +14,7 @@ Football AI Scout V15.4 TEST
 <button
 
 onClick={()=>{
-
 alert("React OK")
-
 }}
 
 >
