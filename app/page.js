@@ -4,256 +4,309 @@ import { useState } from "react";
 
 export default function Home() {
 
+  const games = [
+    ["曼城 vs 阿森纳", "英超", "★★★★★"],
+    ["皇马 vs 巴萨", "西甲", "★★★★☆"],
+    ["拜仁 vs 多特", "德甲", "★★★★"]
+  ];
+
   const [keyword, setKeyword] = useState("");
-  const [result, setResult] = useState(null);
+  const [team, setTeam] = useState(null);
   const [loading, setLoading] = useState(false);
 
 
-  async function searchFootball() {
+  async function searchTeam(){
 
-    if (!keyword) {
-      alert("请输入球队或联赛");
-      return;
-    }
+    if(!keyword) return;
 
     setLoading(true);
 
-    try {
+    try{
 
       const res = await fetch(
-        `/api/football?q=${keyword}`
+        `/api/football?q=${encodeURIComponent(keyword)}`
       );
 
       const data = await res.json();
 
-      setResult(data);
 
-    } catch (error) {
+      if(data.response && data.response.length > 0){
 
-      setResult({
-        error: "数据请求失败"
-      });
+        setTeam(data.response[0]);
+
+      }else{
+
+        setTeam(null);
+
+      }
+
+
+    }catch(error){
+
+      console.log(error);
+      setTeam(null);
 
     }
 
+
     setLoading(false);
+
   }
-
-
-
-  const games = [
-    ['曼城 vs 阿森纳','英超','★★★★★'],
-    ['皇马 vs 巴萨','西甲','★★★★☆'],
-    ['拜仁 vs 多特','德甲','★★★★']
-  ];
 
 
 
   return (
 
-    <main
-      style={{
-        padding:40,
-        fontFamily:"Arial"
-      }}
-    >
+<main
+style={{
+padding:"40px",
+fontFamily:"Arial",
+background:"#f7f9fc",
+minHeight:"100vh"
+}}
+>
 
 
-      <h1>
-        ⚽ 欢迎来到可乐的足球分析
-      </h1>
+<h1>
+⚽ 欢迎来到可乐的足球分析
+</h1>
 
 
-      <p>
-        Football AI Scout V15.0
-      </p>
+<p>
+Football AI Scout V15.1
+</p>
 
 
 
-      <h2>
-        🔥 今日重点比赛
-      </h2>
+<h2>
+🔥 今日重点比赛
+</h2>
 
 
 
-      {
-        games.map((g,i)=>(
+{
+games.map((g,i)=>(
 
-          <div
-            key={i}
-            style={{
-              background:"#f5f7fb",
-              padding:20,
-              margin:15,
-              borderRadius:15
-            }}
-          >
+<div
+key={i}
+style={{
+background:"#fff",
+padding:"20px",
+margin:"15px 0",
+borderRadius:"15px",
+boxShadow:"0 3px 10px #ddd"
+}}
+>
 
-            <h3>
-              {g[0]}
-            </h3>
+<h3>
+{g[0]}
+</h3>
 
-            <p>
-              联赛：{g[1]}
-            </p>
+<p>
+联赛：{g[1]}
+</p>
 
-            <p>
-              关注指数：{g[2]}
-            </p>
+<p>
+关注指数：{g[2]}
+</p>
 
 
-            <button>
-              查看比赛数据
-            </button>
+<button>
+查看比赛数据
+</button>
 
 
-          </div>
+</div>
 
-        ))
-      }
+))
+}
 
 
 
+<hr/>
 
 
-      <h2>
-        🌍 全球足球搜索
-      </h2>
+<h2>
+🌍 全球足球搜索
+</h2>
 
 
+<div
+style={{
+display:"flex",
+gap:"10px"
+}}
+>
 
-      <input
 
-        value={keyword}
+<input
 
-        onChange={
-          (e)=>setKeyword(e.target.value)
-        }
+value={keyword}
 
-        placeholder="输入球队 / 联赛 / 比赛"
+onChange={(e)=>setKeyword(e.target.value)}
 
-        style={{
-          padding:12,
-          width:"70%",
-          fontSize:16
-        }}
+placeholder="输入球队，例如 Real Madrid"
 
-      />
+style={{
+padding:"12px",
+width:"70%",
+fontSize:"16px"
+}}
 
+/>
 
 
-      <button
+<button
 
-        onClick={searchFootball}
+onClick={searchTeam}
 
-        style={{
-          padding:12,
-          marginLeft:10
-        }}
+style={{
+padding:"12px 25px",
+cursor:"pointer"
+}}
 
-      >
+>
 
-        搜索
+搜索
 
-      </button>
+</button>
 
 
+</div>
 
 
-      {
-        loading &&
 
-        <p>
-          正在查询足球数据...
-        </p>
-      }
+{
+loading &&
 
+<p>
+正在查询真实数据...
+</p>
 
+}
 
 
 
-      {
-        result &&
 
-        <div
-          style={{
-            marginTop:30
-          }}
-        >
+{
+team &&
 
-          <h2>
-            🔎 搜索结果
-          </h2>
 
+<div
 
-          <pre
+style={{
+marginTop:"30px",
+background:"#fff",
+padding:"25px",
+borderRadius:"20px",
+boxShadow:"0 3px 15px #ddd"
+}}
 
-            style={{
-              background:"#111",
-              color:"#fff",
-              padding:20,
-              borderRadius:10,
-              overflow:"auto"
-            }}
+>
 
-          >
 
-            {
-              JSON.stringify(
-                result,
-                null,
-                2
-              )
-            }
+<img
 
+src={team.team.logo}
 
-          </pre>
+width="100"
 
+/>
 
-        </div>
 
-      }
+<h2>
 
+{team.team.name}
 
+</h2>
 
 
+<p>
+🌍 国家：
+{team.team.country}
+</p>
 
-      <h2>
-        📊 数据模块
-      </h2>
 
+<p>
+📅 成立年份：
+{team.team.founded}
+</p>
 
-      <ul>
 
-        <li>
-          比赛赛程
-        </li>
 
-        <li>
-          积分排名
-        </li>
+<h3>
+🏟 球场信息
+</h3>
 
-        <li>
-          近期比赛记录
-        </li>
 
-        <li>
-          历史交锋
-        </li>
+<p>
+{team.venue?.name}
+</p>
 
-        <li>
-          伤停信息
-        </li>
 
-        <li>
-          球队阵容
-        </li>
+<p>
+地址：
+{team.venue?.address}
+</p>
 
-      </ul>
 
+<p>
+城市：
+{team.venue?.city}
+</p>
 
 
-    </main>
+<p>
+容量：
+{team.venue?.capacity}
+</p>
+
+
+</div>
+
+
+}
+
+
+
+
+<h2>
+📊 数据模块
+</h2>
+
+
+<ul>
+
+<li>
+比赛赛程
+</li>
+
+<li>
+积分排名
+</li>
+
+<li>
+近期比赛记录
+</li>
+
+<li>
+历史交锋
+</li>
+
+<li>
+伤停信息
+</li>
+
+<li>
+球队阵容
+</li>
+
+
+</ul>
+
+
+
+</main>
 
   );
 }
