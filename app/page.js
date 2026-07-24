@@ -10,67 +10,24 @@ const [keyword,setKeyword]=useState("");
 
 const [team,setTeam]=useState(null);
 
-const [fixtures,setFixtures]=useState([]);
+const [matches,setMatches]=useState([]);
+
+const [h2h,setH2h]=useState([]);
+
+const [injuries,setInjuries]=useState([]);
 
 const [loading,setLoading]=useState(false);
 
 
 
+/*
+搜索球队
+*/
 
-/**
- * 加载今日比赛
- */
-async function loadFixtures(){
-
-try{
-
-const res =
-await fetch("/api/fixtures");
-
-
-const data =
-await res.json();
-
-
-if(data.response){
-
-setFixtures(
-data.response.slice(0,5)
-);
-
-}
-
-
-}catch(error){
-
-console.log(error);
-
-}
-
-}
-
-
-
-useEffect(()=>{
-
-loadFixtures();
-
-},[]);
-
-
-
-
-/**
- * 全球球队搜索
- */
 async function searchTeam(){
 
 
-if(!keyword){
-
-return;
-
-}
+if(!keyword)return;
 
 
 setLoading(true);
@@ -79,13 +36,13 @@ setLoading(true);
 try{
 
 
-const res =
+const res=
 await fetch(
 `/api/team-search?q=${encodeURIComponent(keyword)}`
 );
 
 
-const data =
+const data=
 await res.json();
 
 
@@ -95,33 +52,88 @@ data.response &&
 data.response.length>0
 ){
 
-setTeam(
-data.response[0]
+
+const teamData=
+data.response[0];
+
+
+setTeam(teamData);
+
+
+
+loadTeamData(
+teamData.team.id
 );
 
 
-}else{
-
-
-setTeam(null);
-
-
 }
 
 
-}catch(error){
+}catch(e){
 
-
-console.log(error);
-
-setTeam(null);
-
+console.log(e);
 
 }
-
 
 
 setLoading(false);
+
+
+}
+
+
+
+/*
+加载球队分析数据
+*/
+
+async function loadTeamData(id){
+
+
+
+// 最近比赛
+
+const matchRes=
+await fetch(
+`/api/last-matches?team=${id}`
+);
+
+
+const matchData=
+await matchRes.json();
+
+
+if(matchData.response){
+
+setMatches(
+matchData.response
+);
+
+}
+
+
+
+
+// 伤停
+
+const injuryRes=
+await fetch(
+`/api/injuries?team=${id}`
+);
+
+
+const injuryData=
+await injuryRes.json();
+
+
+
+if(injuryData.response){
+
+setInjuries(
+injuryData.response
+);
+
+}
 
 
 }
@@ -141,7 +153,7 @@ padding:40,
 
 fontFamily:"Arial",
 
-background:"#f7f9fc",
+background:"#f5f7fb",
 
 minHeight:"100vh"
 
@@ -160,7 +172,7 @@ minHeight:"100vh"
 
 <p>
 
-Football AI Scout V15.2.1
+Football AI Scout V15.3
 
 </p>
 
@@ -169,85 +181,7 @@ Football AI Scout V15.2.1
 
 <h2>
 
-🔥 今日真实比赛
-
-</h2>
-
-
-
-{
-
-fixtures.map((f,i)=>(
-
-
-<div
-
-key={i}
-
-style={{
-
-background:"#fff",
-
-padding:20,
-
-margin:"15px 0",
-
-borderRadius:15,
-
-boxShadow:"0 3px 10px #ddd"
-
-}}
-
->
-
-
-<h3>
-
-{f.teams.home.name}
-
- VS
-
-{f.teams.away.name}
-
-</h3>
-
-
-<p>
-
-🏆 {f.league.name}
-
-</p>
-
-
-<p>
-
-🕒
-
-{
-
-new Date(
-f.fixture.date
-).toLocaleString()
-
-}
-
-</p>
-
-
-</div>
-
-
-))
-
-}
-
-
-
-
-
-<h2>
-
-🌍 全球球队搜索
+🌍 搜索球队
 
 </h2>
 
@@ -255,21 +189,13 @@ f.fixture.date
 
 <input
 
-
 value={keyword}
 
-
 onChange={
-
-(e)=>
-
-setKeyword(e.target.value)
-
+(e)=>setKeyword(e.target.value)
 }
 
-
 placeholder="输入球队，例如 皇马 / 曼城 / Real Madrid"
-
 
 style={{
 
@@ -285,20 +211,15 @@ fontSize:16
 />
 
 
-
 <button
 
-
 onClick={searchTeam}
-
 
 style={{
 
 padding:12,
 
-marginLeft:10,
-
-cursor:"pointer"
+marginLeft:10
 
 }}
 
@@ -312,19 +233,16 @@ cursor:"pointer"
 
 
 
-
 {
-
 loading &&
 
 <p>
 
-正在查询全球球队数据...
+正在分析球队数据...
 
 </p>
 
 }
-
 
 
 
@@ -335,25 +253,27 @@ loading &&
 team &&
 
 
-<div
+<div>
 
+
+{/*球队基本信息*/}
+
+
+<div
 
 style={{
 
-marginTop:30,
-
 background:"#fff",
 
-padding:30,
+padding:25,
 
-borderRadius:20,
+marginTop:30,
 
-boxShadow:"0 3px 15px #ddd"
+borderRadius:20
 
 }}
 
 >
-
 
 
 <img
@@ -362,23 +282,21 @@ src={team.team.logo}
 
 width="100"
 
-alt="logo"
-
 />
 
 
 
-<h2>
+<h1>
 
 {team.team.name}
 
-</h2>
+</h1>
 
 
 
 <p>
 
-🌍 国家：
+🌍 国家:
 
 {team.team.country}
 
@@ -388,7 +306,7 @@ alt="logo"
 
 <p>
 
-📅 成立年份：
+📅 成立:
 
 {team.team.founded || "暂无"}
 
@@ -396,31 +314,80 @@ alt="logo"
 
 
 
-
-
 <h3>
 
-🏟 主场信息
+🏟 主场
 
 </h3>
 
 
-
 <p>
-
-球场：
 
 {team.venue?.name || "暂无"}
 
 </p>
 
 
+</div>
+
+
+
+
+
+
+{/* 最近比赛 */}
+
+<h2>
+
+🔥 最近比赛
+
+</h2>
+
+
+{
+
+matches.slice(0,5).map((m,i)=>(
+
+
+<div
+
+key={i}
+
+style={{
+
+background:"#fff",
+
+padding:15,
+
+margin:"10px 0",
+
+borderRadius:12
+
+}}
+
+>
+
 
 <p>
 
-城市：
+{m.teams.home.name}
 
-{team.venue?.city || "暂无"}
+ vs
+
+ {m.teams.away.name}
+
+</p>
+
+
+<p>
+
+比分:
+
+{m.goals.home}
+
+-
+
+{m.goals.away}
 
 </p>
 
@@ -428,13 +395,77 @@ alt="logo"
 
 <p>
 
-容量：
+时间:
 
-{team.venue?.capacity || "暂无"}
+{
+new Date(
+m.fixture.date
+).toLocaleDateString()
+}
 
 </p>
 
 
+
+</div>
+
+
+))
+
+
+}
+
+
+
+
+
+{/* 下一场比赛 */}
+
+<h2>
+
+📅 下一场比赛
+
+</h2>
+
+
+{
+
+matches[0] &&
+
+
+<div
+
+style={{
+
+background:"#fff",
+
+padding:20,
+
+borderRadius:15
+
+}}
+
+>
+
+
+<h3>
+
+{matches[0].teams.home.name}
+
+ VS
+
+{matches[0].teams.away.name}
+
+</h3>
+
+
+<p>
+
+赛事:
+
+{matches[0].league.name}
+
+</p>
 
 
 </div>
@@ -447,26 +478,73 @@ alt="logo"
 
 
 
+{/*伤停*/}
+
+
 <h2>
 
-📊 数据模块
+🚑 伤停信息
 
 </h2>
 
+
+{
+
+injuries.length===0
+
+?
+
+<p>
+
+暂无伤停数据
+
+</p>
+
+:
+
+injuries.slice(0,5).map((x,i)=>(
+
+<div key={i}>
+
+{x.player.name}
+
+-
+
+{x.player.reason}
+
+</div>
+
+))
+
+}
+
+
+
+
+
+</div>
+
+}
+
+
+
+
+
+<h2>
+
+📊 分析模块
+
+</h2>
 
 
 <ul>
 
 <li>
-比赛赛程
+联赛排名
 </li>
 
 <li>
-积分排名
-</li>
-
-<li>
-近期比赛记录
+近期状态
 </li>
 
 <li>
@@ -474,11 +552,15 @@ alt="logo"
 </li>
 
 <li>
-伤停信息
+伤停情况
 </li>
 
 <li>
 球队阵容
+</li>
+
+<li>
+AI预测
 </li>
 
 </ul>
@@ -487,7 +569,6 @@ alt="logo"
 
 
 </main>
-
 
 );
 
