@@ -1,8 +1,15 @@
 {
   "name": "football-ai-scout",
-  "compatibility_date": "2025-01-01",
+  "main": ".open-next/worker.js",
+
+  "compatibility_date": "2026-07-24",
+
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "main": ".open-next/worker.js"
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
 }
