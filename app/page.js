@@ -5,32 +5,48 @@ import {useState} from "react";
 
 export default function Home(){
 
-
 const [keyword,setKeyword]=useState("");
 
-const [result,setResult]=useState(null);
+const [team,setTeam]=useState(null);
+
+const [loading,setLoading]=useState(false);
 
 
 
 async function searchTeam(){
 
 
-console.log("search:",keyword);
+if(!keyword)return;
 
+
+setLoading(true);
 
 
 const res = await fetch(
-"/api/team-search?q="+keyword
+`/api/team-search?q=${encodeURIComponent(keyword)}`
 );
 
 
 const data = await res.json();
 
 
+
 console.log(data);
 
 
-setResult(data);
+
+if(data.response && data.response.length>0){
+
+setTeam(data.response[0].team);
+
+}else{
+
+setTeam(null);
+
+}
+
+
+setLoading(false);
 
 
 }
@@ -41,7 +57,8 @@ return (
 
 <main
 style={{
-padding:40
+padding:40,
+fontFamily:"Arial"
 }}
 >
 
@@ -55,6 +72,9 @@ padding:40
 Football AI Scout V15.4
 </h2>
 
+
+
+<hr/>
 
 
 <h2>
@@ -71,11 +91,16 @@ onChange={
 e=>setKeyword(e.target.value)
 }
 
-placeholder="输入皇马/曼城/拜仁"
+
+placeholder="输入球队，例如 皇马 曼城 拜仁"
+
 
 style={{
+
 padding:15,
+
 width:"70%"
+
 }}
 
 />
@@ -87,38 +112,101 @@ width:"70%"
 onClick={searchTeam}
 
 style={{
+
 padding:15,
+
 marginLeft:10
+
 }}
 
 >
-搜索
+
+{
+loading?
+"搜索中..."
+:
+"搜索"
+}
+
 </button>
 
 
 
+
+
 {
 
-result &&
+team &&
 
-<div>
+<div
+
+style={{
+
+marginTop:30,
+
+background:"#f5f7fb",
+
+padding:25,
+
+borderRadius:15
+
+}}
+
+>
+
 
 <h2>
-结果:
+🎯 搜索结果
 </h2>
 
 
-<pre>
+<img
 
-{
-JSON.stringify(
-result,
-null,
-2
-)
-}
+src={team.logo}
 
-</pre>
+width="120"
+
+/>
+
+
+
+<h2>
+
+{team.name}
+
+</h2>
+
+
+
+<p>
+国家：
+{team.country}
+</p>
+
+
+
+<p>
+成立：
+{team.founded}
+</p>
+
+
+
+<a
+
+href={`/team/${team.id}`}
+
+>
+
+<button>
+
+进入球队分析
+
+</button>
+
+
+</a>
+
 
 
 </div>
@@ -127,10 +215,36 @@ null,
 }
 
 
+
+
+<h2>
+📊 数据模块
+</h2>
+
+
+<ul>
+
+<li>球队信息</li>
+
+<li>Logo</li>
+
+<li>积分排名</li>
+
+<li>近期比赛</li>
+
+<li>历史交锋</li>
+
+<li>伤停信息</li>
+
+<li>球员阵容</li>
+
+</ul>
+
+
+
 </main>
 
 
 )
-
 
 }
